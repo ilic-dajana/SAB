@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 import jdbc2.DB;
@@ -66,7 +67,7 @@ public class id150325_ShopOperations implements ShopOperations {
 			
 			Integer idGrad = rs.getInt("IDGr");	
 			
-			check = "Select * AS ID FROM Prodavnica WHERE IdProdavnica = ?";
+			check = "Select *  FROM Prodavnica WHERE IdProdavnica = ?";
 			ps = con.prepareStatement(check);
 			ps.setInt(1, shopId);			
 			ResultSet rs1 = ps.executeQuery();
@@ -117,7 +118,7 @@ public class id150325_ShopOperations implements ShopOperations {
 		PreparedStatement ps;
 		try {
 			
-			String check = "Select * AS ID FROM Prodavnica WHERE IdProdavnica = ?";
+			String check = "Select *  FROM Prodavnica WHERE IdProdavnica = ?";
 			ps = con.prepareStatement(check);
 			ps.setInt(1, shopId);			
 			ResultSet rs1 = ps.executeQuery();
@@ -140,20 +141,58 @@ public class id150325_ShopOperations implements ShopOperations {
 
 	@Override
 	public int increaseArticleCount(int articleId, int increment) {
-		// TODO Auto-generated method stub
+		Connection con = DB.getInstance().getConnection();
+		try{
+			String q = "UPDATE Artikal SET Kolicina = Kolicina + ? WHERE IdArtikal = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, increment);
+			ps.setInt(2, articleId);
+			ps.executeUpdate();
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return 0;
 	}
 
 	@Override
 	public int getArticleCount(int shopId, int articleId) {
-		// TODO Auto-generated method stub
-		return 0;
+		Connection con = DB.getInstance().getConnection();
+		try{
+			String q = "SELECT Kolicina FROM Artikal WHERE IdProdavnica = ? AND IdArtikal =?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, shopId);
+			ps.setInt(2, articleId);
+			ResultSet rs = ps.executeQuery();
+			if(rs.next())
+				return rs.getInt(1);
+			return -1;
+		}catch (SQLException e) {
+			e.printStackTrace();
+			return -1;
+		}
 	}
 
 	@Override
 	public List<Integer> getArticles(int shopId) {
-		// TODO Auto-generated method stub
-		return null;
+		Connection con = DB.getInstance().getConnection();
+		try{
+			String q = "SELECT IdArtikal FROM Artikal WHERE IdProdavnica = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, shopId);
+			ResultSet rs = ps.executeQuery();
+			
+			List<Integer> ret = new ArrayList<>();
+			while(rs.next()){
+				Integer i = rs.getInt(1);
+				ret.add(i);
+			}
+			for(Integer in : ret)
+				System.out.println("Artikal: " + in );
+			return ret;
+		}catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override

@@ -30,7 +30,7 @@ public class id150325_ArticleOperations implements ArticleOperations {
 			
 			ps.setString(1, articleName);
 			ps.setInt(2, articlePrice);
-			ps.setInt(4, shopId);
+			ps.setInt(3, shopId);
 			
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
