@@ -155,13 +155,12 @@ public class id150325_ShopOperations implements ShopOperations {
 	}
 
 	@Override
-	public int getArticleCount(int shopId, int articleId) {
+	public int getArticleCount(int articleId) {
 		Connection con = DB.getInstance().getConnection();
 		try{
-			String q = "SELECT Kolicina FROM Artikal WHERE IdProdavnica = ? AND IdArtikal =?";
+			String q = "SELECT Kolicina FROM Artikal WHERE IdArtikal =?";
 			PreparedStatement ps = con.prepareStatement(q);
-			ps.setInt(1, shopId);
-			ps.setInt(2, articleId);
+			ps.setInt(1 , articleId);
 			ResultSet rs = ps.executeQuery();
 			if(rs.next())
 				return rs.getInt(1);

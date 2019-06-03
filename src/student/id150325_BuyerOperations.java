@@ -140,7 +140,7 @@ public class id150325_BuyerOperations implements BuyerOperations {
 			ResultSet rs = ps.executeQuery();
 			if(!rs.next())
 				return -1;
-			q = "INSERT INTO Porudzbina(stanje, IdKupac) VALUES (?, ?)";
+			q = "INSERT INTO Porudzbina(stanje, IdKupac, Lokacija) VALUES (?, ?, ?)";
 			ps = con.prepareStatement(q);
 			ps.setString(1, "create");
 			ps.setInt(2, buyerId);

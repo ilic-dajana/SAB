@@ -49,7 +49,7 @@ public interface ShopOperations {
      * @param articleId id of the article
      * @return number of articles in shop
      */
-    int getArticleCount(int shopId, int articleId);
+    int getArticleCount(int articleId);
 
     /**
      * Gets all articles.

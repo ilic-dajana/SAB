@@ -63,6 +63,33 @@ public class id150325_CityOperations implements CityOperations {
 			
 		return null;
 	}
+	
+	public int getDistance(int cityId1, int cityId2){
+		if(cityId1 == cityId2)
+			return 0;
+		Connection con = DB.getInstance().getConnection();
+		try{
+			String q = "SELECT udaljenost FROM Linija WHERE IdGrad1 = ? AND IdGrad2 = ?"
+					+ "UNION"
+					+ "SELECT udaljenost FROM Linija WHERE IdGrad2 = ? AND IdGrad1 = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, cityId1);
+			ps.setInt(2, cityId2);
+			ps.setInt(3, cityId1);
+			ps.setInt(4, cityId2);
+			
+			ResultSet rs = ps.executeQuery();
+			if(rs.next())
+				return rs.getInt(1);
+			else
+				return -1;
+			
+		}catch(SQLException s){
+			s.printStackTrace();
+		}
+		
+		return -1;
+	}
 
 	@Override
 	public int connectCities(int cityId1, int cityId2, int distance) {
