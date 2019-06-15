@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.List;
 
 import jdbc2.DB;
@@ -15,16 +16,51 @@ import operations.TransactionOperations;
 public class id150325_TransactionOperations implements TransactionOperations {
 
 	@Override
-	public BigDecimal getBuyerTransactionsAmmount(int buyerId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public BigDecimal getShopTransactionsAmmount(int shopId) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	@Override
+	public int getTransactionForBuyersOrder(int orderId) {
+		Connection con = DB.getInstance().getConnection();
+		try {
+			String q = "Select idTransakcija  From Transakcija where idPorudzbine = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, orderId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			return rs.getInt(1);
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return -1;
+	}
+	
+	@Override
+	public BigDecimal getAmmountThatShopRecievedForOrder(int shopId, int orderId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	
+	@Override
+	public BigDecimal getBuyerTransactionsAmmount(int buyerId) {
+		Connection con  = DB.getInstance().getConnection();
+		try {
+			String q = "Select SUM(Iznos) as platio From Transakcija where idKupac = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, buyerId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			return rs.getBigDecimal("platio");
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+
 
 	@Override
 	public List<Integer> getTransationsForBuyer(int buyerId) {
@@ -47,11 +83,7 @@ public class id150325_TransactionOperations implements TransactionOperations {
 		return null;
 	}
 
-	@Override
-	public int getTransactionForBuyersOrder(int orderId) {
-		
-		return 0;
-	}
+	
 
 	@Override
 	public int getTransactionForShopAndOrder(int orderId, int shopId) {
@@ -95,25 +127,54 @@ public class id150325_TransactionOperations implements TransactionOperations {
 
 	@Override
 	public Calendar getTimeOfExecution(int transactionId) {
-		// TODO Auto-generated method stub
+		Connection con = DB.getInstance().getConnection();
+		String q = "Select Time From  Transakcija where idTransakcija = ?";
+		try {
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, transactionId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			
+			Calendar c = new GregorianCalendar();
+			c.setTime(rs.getDate(1));
+			return c;
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return null;
+		
 	}
 
 	@Override
 	public BigDecimal getAmmountThatBuyerPayedForOrder(int orderId) {
-		// TODO Auto-generated method stub
+		Connection con  = DB.getInstance().getConnection();
+		try {
+			String q = "Select SUM(Iznos) as platio From Transakcija where idPorudzbine = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, orderId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			return rs.getBigDecimal("platio");
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 
-	@Override
-	public BigDecimal getAmmountThatShopRecievedForOrder(int shopId, int orderId) {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public BigDecimal getTransactionAmount(int transactionId) {
-		
+		Connection con  = DB.getInstance().getConnection();
+		try {
+			String q = "Select Iznos From Transakcija where idTransakcija = ?";
+			PreparedStatement ps = con.prepareStatement(q);
+			ps.setInt(1, transactionId);
+			ResultSet rs = ps.executeQuery();
+			rs.next();
+			return rs.getBigDecimal(1);
+		}catch (SQLException e) {
+			e.printStackTrace();
+		}
 		return null;
 	}
 

@@ -41,7 +41,11 @@ AS
 BEGIN
 	IF EXISTS (SELECT IdPorudzbina FROM Porudzbina WHERE IdPorudzbina = @orderId)
 	BEGIN
-		SELECT @discount = SUM(N.Kolicina * A.Cena * P.popust / 100)
+		declare @imapopust ints
+
+		exec SP_IMA_DODATNI_POPUST @orderId, @imapopust out
+
+		SELECT @discount = SUM(N.Kolicina * A.Cena * (P.popust + @imapopust)/ 100)
 		FROM NaruceniArtikal AS N
 		INNER JOIN  Artikal AS A ON N.IdArtikal = A.IdArtikal
 		INNER JOIN  Prodavnica AS P ON A.IdProdavnica = P.IdProdavnica
@@ -62,7 +66,6 @@ BEGIN
 	BEGIN
 		declare @discount  DECIMAL(10,3)
 		exec dbo.CalculateDiscount @orderId , @discount OUTPUT
-
 		
 		SELECT @racun = SUM(N.Kolicina * A.Cena ) - @discount
 		FROM NaruceniArtikal AS N
@@ -119,3 +122,86 @@ BEGIN
 		UPDATE Time_Operations set [current_time] = @date WHERE idGeneral = 1
 	END
 END
+go
+
+CREATE PROCEDURE dbo.SP_IMA_DODATNI_POPUST
+    @idOrder int = 0,
+    @imapopust int OUTPUT 
+AS
+begin
+    declare @tekuciDatum DATE
+	declare @idKupac int
+	
+	select @tekuciDatum = [current_time]
+	from Time_Operations
+	where idGeneral = 0
+
+	select @idKupac = idKupac 
+	from Porudzbina
+	where idPorudzbina = @idOrder
+
+	if exists (select *
+				from Transakcija AS T 
+				INNER JOIN Porudzbina AS P ON T.idPorudzbina = P.idPorudzbina
+				where P.idPorudzbina <> @idOrder and P.datum_received >= DATEADD(DAY, -30, @tekuciDatum)
+				group by P.idPorudzbina
+				having sum(T.Iznos)>10000)
+			set @imapopust = 2
+	else
+			set @imapopust = 0
+
+end		
+go
+
+CREATE TRIGGER TR_TRANSFER_MONEY_TO_SHOPS
+    ON Porudzbina
+    FOR UPDATE
+    AS
+    BEGIN
+     declare @cursorI CURSOR
+	 declare @cursorD CURSOR
+	 declare @idPorD int
+	 declare @idPorI int
+	 declare @idStanjeD varchar(100)
+	 declare @idStanjeI varchar(100)
+
+	 SET @cursor = CURSOR FOR
+	 SELECT Stanje, IdPorudzbina
+	 from inserted
+
+	 SET @cursor = CURSOR FOR
+	 SELECT Stanje, IdPorudzbina
+	 from deleted
+
+	 open @cursorI
+	 open @cursorD
+
+	 fetch next from @cursorI
+	 into @idPorI, @idStanjeI
+	 fetch next from @cursorD
+	 into @idPorD, @idStanjeD
+
+	 while(@@FETCH_STATUS = 0)
+	 begin
+		IF(@idStanjeD = 'sent' and @idStanjeI= 'arrived')
+		begin
+			declare @suma decimal(10,3)
+
+
+		end
+
+
+		 fetch next from @cursorI
+		 into @idPorI, @idStanjeI
+		 fetch next from @cursorD
+		 into @idPorD, @idStanjeD
+	 end
+
+
+	 close @cursorI
+	 close @cursorD
+
+	 deallocate @cursorI
+	 deallocate @cursorD
+
+    END
